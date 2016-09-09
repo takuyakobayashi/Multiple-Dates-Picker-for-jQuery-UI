@@ -7,7 +7,8 @@
  */
 (function( $ ){
 	$.extend($.ui, { multiDatesPicker: { version: "1.6.4" } });
-	
+	var op;
+
 	$.fn.multiDatesPicker = function(method) {
 		var mdp_arguments = arguments;
 		var ret = this;
@@ -181,6 +182,8 @@
 				
 				// Updates the calendar view
 				$this.datepicker('refresh');
+
+				op = options;
 			},
 			compareDates : function(date1, date2) {
 				date1 = dateConvert.call(this, date1);
@@ -409,6 +412,8 @@
 				if(mdp_events.onSelect)
 					mdp_events.onSelect();
 			},
+			toggleAutoSelectMode: function( enable , range ){
+			},
 			destroy: function(){
 				this.multiDatesPicker = null;
 				$(this).datepicker('destroy');
@@ -454,6 +459,7 @@
 					case 'compareDates':
 					case 'dateConvert':
 					case 'value':
+					case 'toggleAutoSelectMode':
 						ret = exec_result;
 				}
 				return exec_result;
