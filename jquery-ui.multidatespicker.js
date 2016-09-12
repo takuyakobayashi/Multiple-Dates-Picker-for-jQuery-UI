@@ -55,6 +55,15 @@
 			*/
 			return methods.dateConvert.call(this, date, desired_type, date_format);
 		}
+		function getDaysRange(array) {
+			// Return 5 days except Saturday and Sunday
+			if(array == null || array.length == 0 || array.length > 2)
+				return Array[0,5];
+
+			var begin = array[0] < array[1] ? array[0] : array[1];
+			var end = array[1] < array[0] ? array[1] : array[1];
+			return new Array(begin,end);
+		}
 		
 		var methods = {
 			init : function( options ) {
@@ -351,15 +360,21 @@
 				switch(this.multiDatesPicker.mode) {
 					case 'daysRange':
 						this.multiDatesPicker.dates[type] = []; // deletes all picked/disabled dates
-						var end = this.multiDatesPicker.autoselectRange[1];
-						var begin = this.multiDatesPicker.autoselectRange[0];
-						if(end < begin) { // switch
-							end = this.multiDatesPicker.autoselectRange[0];
-							begin = this.multiDatesPicker.autoselectRange[1];
-						}
-						for(var i = begin; i < end; i++) 
+						var range = getDaysRange(this.multiDatesPicker.autoselectRange);
+						for(var i = range[0]; i < range[1]; i++) 
 							methods.addDates.call(this, methods.sumDays.call(this,date, i), type);
-						break;
+						break;						
+					case 'instantDaysRange':
+						var range = getDaysRange(this.multiDatesPicker.autoselectRange);
+
+						for(var i = range[0]; i < range[1]; i++){
+							var sumedDay =  methods.sumDays(date, i);
+							if(methods.gotDate.call(this, sumedDay) === false)
+								methods.addDates.call(this, sumedDay, type);
+							else
+								methods.removeDates.call(this, sumedDay, type);
+						}
+						break;						
 					default:
 						if(methods.gotDate.call(this, date) === false) // adds dates
 							methods.addDates.call(this, date, type);
@@ -387,6 +402,7 @@
 					break;
 					case 'daysRange':
 					case 'weeksRange':
+					case 'instantDaysRange':
 						var mandatory = 1;
 						for(option in options)
 							switch(option) {
@@ -413,6 +429,17 @@
 					mdp_events.onSelect();
 			},
 			toggleAutoSelectMode: function( enable , range ){
+				if(!op.mode) op.mode = this.multiDatesPicker.mode;
+
+				var mode;
+				if (enable){
+					mode = 'instantDaysRange';
+					op.autoselectRange = this.multiDatesPicker.autoselectRange = range;
+				} else {
+					mode = 'normal';
+				}
+				op.mode = mode;
+				methods.setMode.call(this, op);
 			},
 			destroy: function(){
 				this.multiDatesPicker = null;
